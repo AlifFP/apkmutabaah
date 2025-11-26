@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUTABAAH GOD MODE - DEBUG</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #00ff41; display: flex; justify-content: center; padding: 20px; }
+        .container { background: #1a1a1a; padding: 30px; border: 2px solid #ff0000; border-radius: 0; width: 100%; max-width: 500px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+        h1 { text-align: center; border-bottom: 1px dashed #ff0000; padding-bottom: 10px; margin-bottom: 20px; color: #ff0000; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; background: #000; border: 1px solid #333; color: #fff; box-sizing: border-box; }
+        button { margin-top: 25px; width: 100%; padding: 15px; background: #ff0000; color: #fff; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; font-size: 1.2em; }
+        button:hover { background: #cc0000; }
+        .log-box { margin-top: 20px; background: #000; border: 1px solid #ff0000; height: 300px; overflow-y: scroll; padding: 10px; font-size: 0.8em; white-space: pre-wrap; color: #00ff41; }
+        .hidden { display: none; }
+        .toggle-group { display: flex; gap: 10px; margin-top: 5px; }
+        .toggle-btn { flex: 1; padding: 10px; background: #333; color: #777; border: 1px solid #444; cursor: pointer; text-align: center; }
+        .toggle-btn.active { background: #ff0000; color: #fff; border-color: #ff0000; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>MUTABAAH DEBUG MODE (V KUNCI)</h1>
+    <p style="color: yellow; text-align: center;">Jalankan ini, lihat LOG, dan kirimkan nilai KUNCI yang berhasil.</p>
+
+    <form id="godForm">
+        <label>TARGET CREDENTIALS</label>
+        <input type="text" id="username" placeholder="Username (03227)" value="03227" required>
+        <input type="password" id="password" placeholder="Password" value="03227" required>
+
+        <label>GENDER & HAID CONFIG (Abaikan, Hanya Test Login)</label>
+        <div class="toggle-group">
+            <div class="toggle-btn active" id="btnMale" onclick="setGender('male')">LAKI-LAKI</div>
+            <div class="toggle-btn" id="btnFemale" onclick="setGender('female')">PEREMPUAN</div>
+        </div>
+        <input type="hidden" id="gender" value="male">
+
+        <div id="haidPanel" class="hidden">
+            <label style="color: #ff333a;">RENTANG TANGGAL HAID</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="haidStart" placeholder="YYYY-MM-DD (Mulai)">
+                <input type="text" id="haidEnd" placeholder="YYYY-MM-DD (Selesai)">
+            </div>
+        </div>
+
+        <button type="submit" id="btnSubmit">START DEBUG SEQUENCE</button>
+    </form>
+
+    <div id="logger" class="log-box">System Ready... Waiting for input.</div>
+</div>
+
+<script>
+    const logDiv = document.getElementById('logger');
+    function log(msg) {
+        logDiv.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function setGender(g) {
+        document.getElementById('gender').value = g;
+        document.getElementById('btnMale').className = g === 'male' ? 'toggle-btn active' : 'toggle-btn';
+        document.getElementById('btnFemale').className = g === 'female' ? 'toggle-btn active' : 'toggle-btn';
+        document.getElementById('haidPanel').className = g === 'female' ? '' : 'hidden';
+    }
+
+    setGender('male'); // Set default
+
+    document.getElementById('godForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerText = "EXECUTING...";
+        
+        const data = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            gender: document.getElementById('gender').value,
+            haid_start: document.getElementById('haidStart').value,
+            haid_end: document.getElementById('haidEnd').value
+        };
+
+        log("--- MEMULAI DEBUG OPERASI ---");
+        log("Mengirim data ke proxy.php via GET (Anti 405)...");
+
+        try {
+            const params = new URLSearchParams(data).toString();
+            const req = await fetch(`proxy.php?${params}`, { method: 'GET' });
+            
+            if (!req.ok) throw new Error(`HTTP Error: ${req.status}`);
+            
+            const text = await req.text();
+            log(text);
+            log("--- DEBUG SELESAI. CARI KUNCI DITEMUKAN! ---");
+        } catch (err) {
+            log(`FATAL ERROR: ${err.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "START DEBUG SEQUENCE";
+        }
+    });
+</script>
+</body>
+</html>
